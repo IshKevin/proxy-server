@@ -10,16 +10,30 @@ async function bootstrap() {
     logger.info('Starting PostgreSQL Proxy Server...');
     logger.info(`Environment: ${config.nodeEnv}`);
     logger.info(`Target: ${config.supabase.host}:${config.supabase.port}`);
-    const healthServer = new HealthServer(config.http.port);
-    await healthServer.start();
-    const proxyServer = new ProxyServer(
-      config.proxy.port,
-      config.supabase.host,
-      config.supabase.port
-    );
-    await proxyServer.start();
-    logger.info('All services started successfully');
-    gracefulShutdown([healthServer, proxyServer]);
+
+    const isRailway = process.env.RAILWAY_ENVIRONMENT;
+
+    if (isRailway) {
+      const proxyServer = new ProxyServer(
+        config.proxy.port,
+        config.supabase.host,
+        config.supabase.port
+      );
+      await proxyServer.start();
+      logger.info('Proxy service started for Railway');
+      gracefulShutdown([proxyServer]);
+    } else {
+      const healthServer = new HealthServer(config.http.port);
+      await healthServer.start();
+      const proxyServer = new ProxyServer(
+        config.proxy.port,
+        config.supabase.host,
+        config.supabase.port
+      );
+      await proxyServer.start();
+      logger.info('All services started successfully');
+      gracefulShutdown([healthServer, proxyServer]);
+    }
 
   } catch (error) {
     logger.error('Failed to start server:', error);

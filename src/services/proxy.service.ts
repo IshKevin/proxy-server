@@ -41,14 +41,13 @@ export class ProxyServer extends EventEmitter {
   private handleConnection(clientSocket: net.Socket): void {
     const clientId = `${clientSocket.remoteAddress}:${clientSocket.remotePort}`;
     logger.debug(`New connection from ${clientId}`);
-    
+
     this.metrics.incrementConnections();
     this.activeConnections.add(clientSocket);
     const serverSocket = net.connect(
       {
         host: this.targetHost,
         port: this.targetPort,
-        family: 6,
       },
       () => {
         logger.debug(`Connected to target for client ${clientId}`);
@@ -91,8 +90,6 @@ export class ProxyServer extends EventEmitter {
       bytesSent += chunk.length;
       this.metrics.addBytesSent(chunk.length);
     });
-
-    // Connection close
     clientSocket.on('close', () => {
       logger.debug(`Client disconnected (${clientId}), bytes: ${bytesReceived}/${bytesSent}`);
       this.cleanup(clientSocket, serverSocket);
@@ -107,7 +104,7 @@ export class ProxyServer extends EventEmitter {
   private cleanup(clientSocket: net.Socket, serverSocket: net.Socket): void {
     this.activeConnections.delete(clientSocket);
     this.metrics.decrementConnections();
-    
+
     if (!clientSocket.destroyed) clientSocket.destroy();
     if (!serverSocket.destroyed) serverSocket.destroy();
   }
@@ -123,7 +120,7 @@ export class ProxyServer extends EventEmitter {
       this.activeConnections.forEach(socket => {
         socket.destroy();
       });
-      
+
       this.server.close(() => {
         logger.info('Proxy server closed');
         resolve();
