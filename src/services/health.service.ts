@@ -26,7 +26,7 @@ export class HealthServer {
   }
 
   private setupRoutes(): void {
-    this.app.get(HEALTH_CHECK_PATHS.ROOT, (req, res) => {
+    this.app.get(HEALTH_CHECK_PATHS.ROOT, (_req, res) => {
       res.json({
         service: APP_NAME,
         version: APP_VERSION,
@@ -36,7 +36,7 @@ export class HealthServer {
       });
     });
 
-    this.app.get(HEALTH_CHECK_PATHS.HEALTH, (req, res) => {
+    this.app.get(HEALTH_CHECK_PATHS.HEALTH, (_req, res) => {
       const health = {
         status: 'healthy',
         uptime: process.uptime(),
@@ -46,15 +46,15 @@ export class HealthServer {
       res.json(health);
     });
 
-    this.app.get(HEALTH_CHECK_PATHS.READY, (req, res) => {
+    this.app.get(HEALTH_CHECK_PATHS.READY, (_req, res) => {
       res.status(HTTP_STATUS.OK).json({ ready: true });
     });
 
-    this.app.get(HEALTH_CHECK_PATHS.LIVE, (req, res) => {
+    this.app.get(HEALTH_CHECK_PATHS.LIVE, (_req, res) => {
       res.status(HTTP_STATUS.OK).json({ alive: true });
     });
 
-    this.app.get(HEALTH_CHECK_PATHS.METRICS, (req, res) => {
+    this.app.get(HEALTH_CHECK_PATHS.METRICS, (_req, res) => {
       const metrics = this.metrics.getMetrics();
       res.json(metrics);
     });
